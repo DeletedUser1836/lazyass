@@ -12,6 +12,7 @@ Apps-Amount: 0
 END
 fi
 
+# shellcheck disable=SC2207
 apps=($(grep '^Apps:' "$AppsConf" | sed 's/^Apps: *//'))
 AmountOfApps=$(grep "Apps-Amount:" "$AppsConf" | awk -F': ' '{print $2}')
 
@@ -85,8 +86,17 @@ case "$1" in
         grep "^Apps:" "$AppsConf" | sed 's/^Apps: *//'
     ;;
 
+    -h|-?|--help)
+        echo "lazyass - launches the provided apps because you are lazy and dont want to open them all one by one"
+        echo "-ap/--add-app - adds app to the list"
+        echo "-rma/--remove-app - removes an app from the list"
+        echo "-la/--list-apps - lists current apps"
+
+    ;;
+
     -*)
         echo "Invalid argument provided."
+        exit 1
     ;;
 
     *)
@@ -95,5 +105,6 @@ case "$1" in
         do
             command -v "$app" >/dev/null && "$app" &
         done
+        exit 0
     ;;
 esac
