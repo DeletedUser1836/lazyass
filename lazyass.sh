@@ -6,16 +6,14 @@ if [[ ! -f "$AppsConf" ]]
 then
     echo "Could not locate the config file at $AppsConf"
     echo "Creating config file..."
-    cat > "$AppsConf" <<EOF
+    cat > "$AppsConf" <<END
 Apps:
-Apps-Amount:
-EOF
+Apps-Amount: 0
+END
 fi
 
-declare -a apps=()
-
-# shellcheck disable=SC2034
-AmountOfApps=$($AppsConf|grep "Apps-Amount:")
+apps=($(grep '^Apps:' "$AppsConf" | sed 's/^Apps: *//'))
+AmountOfApps=$(grep "Apps-Amount:" "$AppsConf" | awk -F': ' '{print $2}')
 
 for app in "${apps[@]}"
 do
@@ -32,14 +30,70 @@ case "$1" in
         shift
         if [[ -n $1 ]]
         then
-            echo "$1" >> "$AppsConf"
-            echo "App '$1' added to config."
+            appName="$1"
+            sed -i "/^Apps:/ s|$| $appName|" "$AppsConf"
+            newCount=$((AmountOfApps + 1))
+            sed -i "s/^Apps-Amount:.*/Apps-Amount: $newCount/" "$AppsConf"
+            echo "App '$appName' added to config."
         else
             echo "No app name provided."
         fi
     ;;
 
     -rma|--remove-app)
-        #TODO
+        shift
+        if [[ -n $1 ]]
+        then
+            appName="$1"
+            if grep -qE "^Apps:.*\b$appName\b" "$AppsConf"
+            then
+                echo "Do you really want to delete '$appName' from the app list? [y/n]"
+                read -r conf
+                while true
+                do
+                    case "$conf" in
+                        y)
+                            sed -i "s/\b$appName\b//g" "$AppsConf"
+                            sed -i 's/  */ /g' "$AppsConf"
+                            sed -i 's/Apps: /Apps:/g' "$AppsConf"
+                            newCount=$((AmountOfApps - 1))
+                            sed -i "s/^Apps-Amount:.*/Apps-Amount: $newCount/" "$AppsConf"
+                            echo "App '$appName' was deleted from the list."
+                            break
+                        ;;
+                        n)
+                            echo "Abort."
+                            break
+                        ;;
+                        *)
+                            echo "Invalid argument provided. Please answer with 'y' or 'n': "
+                            read -r conf
+                        ;;
+                    esac
+                done
+            else
+                echo "App '$appName' is not in the config list."
+            fi
+        else
+            echo "No app name was provided."
+        fi
+    ;;
+
+    -la|--list-apps)
+        echo "Total apps: $AmountOfApps"
+        echo "Listing..."
+        grep "^Apps:" "$AppsConf" | sed 's/^Apps: *//'
+    ;;
+
+    -*)
+        echo "Invalid argument provided."
+    ;;
+
+    *)
+        echo "Launching apps..."
+        for app in "${apps[@]}"
+        do
+            command -v "$app" >/dev/null && "$app" &
+        done
     ;;
 esac
