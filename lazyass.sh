@@ -26,6 +26,35 @@ do
     unset pathToApp
 done
 
+
+launchProfileApps() {
+    profileName="$1"
+    if ! grep -q "^\[profile:$profileName\]" "$AppsConf"
+    then
+        echo "Profile '$profileName' not found in config."
+        exit 1
+    fi
+
+    appsLine=$(awk "/\\[profile:$profileName\\]/ {found=1} found && /^Apps:/ {print; exit}" "$AppsConf")
+    apps=$(echo "$appsLine" | sed 's/^Apps:[[:space:]]*//')
+
+    if [[ -z $apps ]]
+    then
+        echo "No applications defined for profile '$profileName'."
+        exit 1
+    fi
+
+    for app in $apps
+    do
+        if command -v "$app" >/dev/null 2>&1
+        then
+            "$app" &
+        else
+            echo "$app not found on system."
+        fi
+    done
+}
+
 case "$1" in
     -ap|--add-app)
         shift
@@ -86,7 +115,7 @@ case "$1" in
         grep "^Apps:" "$AppsConf" | sed 's/^Apps: *//'
     ;;
 
-    --edit|-E)
+    -E|--edit)
         echo "Opening config file '$AppsConf' for editing..."
         sudo nano "$AppsConf"
     ;;
@@ -105,11 +134,6 @@ case "$1" in
     ;;
 
     *)
-        echo "Launching apps..."
-        for app in "${apps[@]}"
-        do
-            command -v "$app" >/dev/null && "$app" &
-        done
-        exit 0
+        launchProfileApps
     ;;
 esac
