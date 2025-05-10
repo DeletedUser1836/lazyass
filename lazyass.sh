@@ -27,6 +27,7 @@ do
 done
 
 
+# shellcheck disable=SC2120
 launchProfileApps() {
     profileName="$1"
     if ! grep -q "^\[profile:$profileName\]" "$AppsConf"
@@ -36,6 +37,7 @@ launchProfileApps() {
     fi
 
     appsLine=$(awk "/\\[profile:$profileName\\]/ {found=1} found && /^Apps:/ {print; exit}" "$AppsConf")
+    # shellcheck disable=SC2001
     apps=$(echo "$appsLine" | sed 's/^Apps:[[:space:]]*//')
 
     if [[ -z $apps ]]
@@ -120,6 +122,43 @@ case "$1" in
         sudo nano "$AppsConf"
     ;;
 
+    #profiles
+    -cP|--create-profile)
+    shift
+        if [[ -n "$1" ]]
+        then
+            profile_name="$1"
+            if grep -q "^\[profile:$profile_name\]" "$AppsConf"
+            then
+                echo "Profile '$profile_name' already exists."
+            else
+                echo "Creating profile '$profile_name'..."
+
+                
+                cat >> "$AppsConf" <<EOF
+
+[profile:$profile_name]
+Apps:
+Apps-Amount: 0
+EOF
+
+                echo "Profile '$profile_name' created."
+
+            
+                if [[ -n "$2" ]]
+                then
+                    shift
+                    app="$1"
+                    sed -i "/^\[profile:$profile_name\]/,/\[profile:/s/Apps:/Apps: $app /" "$AppsConf"
+                    echo "App '$app' added to profile '$profile_name'."
+                fi
+            fi
+        else
+            echo "Please specify a profile name."
+        fi
+    ;;
+
+    #misc and help
     -h|-?|--help)
         echo "lazyass - launches the provided apps because you are lazy and dont want to open them all one by one"
         echo "-ap/--add-app - adds app to the list"
