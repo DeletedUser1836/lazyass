@@ -65,7 +65,7 @@ case "$1" in
             appName="$1"
             sed -i "/^Apps:/ s|$| $appName|" "$AppsConf"
             newCount=$((AmountOfApps + 1))
-            sed -i "s/^Apps-Amount:.*/Apps-Amount: $newCount/" "$AppsConf"
+            sed -i "s/^Apps-Amount:.*/Apps-Amount: $newCount/" "$AppsConf"  #pancakes are f*cking delicious
             echo "App '$appName' added to config."
         else
             echo "No app name provided."
@@ -165,9 +165,26 @@ EOF
             profile_name="$1"
             if grep -q "^\[profile:$profile_name\]" "$AppsConf"
             then
-                echo "Deleting profile '$profile_name'..."
-                sed -i "/^\[profile:$profile_name\]/,/^\[profile:/ { /^\[profile:/!d }" "$AppsConf"
-                echo "Profile '$profile_name' deleted."
+                while true
+                do
+                    echo "Are you sure you want to delete the profile '$profile_name'? (y/n)"
+                    read -r confirm
+                    case "$confirm" in
+                        y|Y)
+                            echo "Deleting profile '$profile_name'..."
+                            sed -i "/^\[profile:$profile_name\]/,/^\[profile:/ { /^\[profile:/!d }" "$AppsConf"
+                            echo "Profile '$profile_name' deleted."
+                            break
+                        ;;
+                        n|N)
+                            echo "Aborted. Profile '$profile_name' not deleted."
+                            break
+                        ;;
+                        *)
+                            echo "Invalid input. Please answer with 'y' or 'n'."
+                        ;;
+                    esac
+                done
             else
                 echo "Profile '$profile_name' not found."
             fi
