@@ -191,6 +191,7 @@ EOF
         else
             echo "Please specify a profile name."
         fi
+        unset $profile_name
     ;;
 
     -Atp|--add-app-to-profile)
@@ -204,7 +205,7 @@ EOF
             then
                 echo "Adding app '$app_name' to profile '$profile_name'..."
                 sed -i "/^\[profile:$profile_name\]/,/^\[profile:/s/Apps: .*/Apps: & $app_name/" "$AppsConf"
-                
+
                 sed -i "/^\[profile:$profile_name\]/,/^\[profile:/s/Apps-Amount: [0-9]\+/Apps-Amount: $(( $(grep "Apps-Amount:" "$AppsConf" | awk '{print $2}') + 1 ))/" "$AppsConf"
 
                 echo "App '$app_name' added to profile '$profile_name'."
@@ -214,6 +215,45 @@ EOF
         else
             echo "Please specify both a profile name and an app name."
         fi
+    ;;
+
+    -lP|--list-profiles)
+        echo "Listing all profiles..."
+        profiles=$(grep -oP "^\[profile:\K[^\]]+" "$AppsConf")
+        if [[ -n "$profiles" ]]
+        then
+            echo "Profiles found:"
+            echo "$profiles"
+        else
+            echo "No profiles found."
+        fi
+    ;;
+
+    -laP|--list-apps-profile)
+        shift
+        if [[ -n "$1" ]]
+        then
+            profileName="$1"
+
+            if grep -q "^\[profile:$profileName\]" "$AppsConf"
+            then
+                echo "Listing apps for profile '$profileName'..."
+
+                apps=$(sed -n "/^\[profile:$profileName\]/,/^\[profile:/p" "$AppsConf" | grep -A 100 "Apps:" | tail -n +2)
+                if [[ -n "$apps" ]]
+                then
+                    echo "Apps in profile '$profileName':"
+                    echo "$apps"
+                else
+                    echo "No apps assigned to profile '$profileName'."
+                fi
+            else
+                echo "Profile '$profileName' not found."
+            fi
+        else
+            echo "Please specify a profile name."
+        fi
+        unset $profileName
     ;;
 
     #misc and help
