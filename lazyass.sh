@@ -86,6 +86,11 @@ case "$1" in
         grep "^Apps:" "$AppsConf" | sed 's/^Apps: *//'
     ;;
 
+    --edit|-E)
+        echo "Opening config file '$AppsConf' for editing..."
+        sudo nano "$AppsConf"
+    ;;
+
     -h|-?|--help)
         echo "lazyass - launches the provided apps because you are lazy and dont want to open them all one by one"
         echo "-ap/--add-app - adds app to the list"
