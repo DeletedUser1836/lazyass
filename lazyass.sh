@@ -258,11 +258,17 @@ EOF
 
     #misc and help
     -h|-?|--help)
-        echo "lazyass - launches the provided apps because you are lazy and dont want to open them all one by one"
-        echo "-ap/--add-app - adds app to the list"
-        echo "-rma/--remove-app - removes an app from the list"
-        echo "-la/--list-apps - lists current apps"
-
+        echo "lazyass - launches the provided apps because you are lazy and don't want to open them all one by one"
+        echo "-ap/--add-app                    - adds app to the default list"
+        echo "-rma/--remove-app                - removes an app from the default list"
+        echo "-la/--list-apps                  - lists apps in the default list"
+        echo "-E/--edit                        - opens the config file for manual editing"
+        echo "-cP/--create-profile <name>      - creates a new profile"
+        echo "-dP/--delete-profile <name>      - deletes the specified profile"
+        echo "-Atp/--add-app-to-profile <p> <a>- adds app to profile"
+        echo "-lP/--list-profiles              - lists all profiles"
+        echo "-laP/--list-apps-profile <name>  - lists apps from a specific profile"
+        echo "<profile>                        - launches all apps from the given profile"
     ;;
 
     -*)
@@ -271,6 +277,6 @@ EOF
     ;;
 
     *)
-        launchProfileApps
+        launchProfileApps "$1"
     ;;
 esac
