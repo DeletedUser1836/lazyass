@@ -193,6 +193,29 @@ EOF
         fi
     ;;
 
+    -Atp|--add-app-to-profile)
+        shift
+        if [[ -n "$1" && -n "$2" ]]
+        then
+            profile_name="$1"
+            app_name="$2"
+
+            if grep -q "^\[profile:$profile_name\]" "$AppsConf"
+            then
+                echo "Adding app '$app_name' to profile '$profile_name'..."
+                sed -i "/^\[profile:$profile_name\]/,/^\[profile:/s/Apps: .*/Apps: & $app_name/" "$AppsConf"
+                
+                sed -i "/^\[profile:$profile_name\]/,/^\[profile:/s/Apps-Amount: [0-9]\+/Apps-Amount: $(( $(grep "Apps-Amount:" "$AppsConf" | awk '{print $2}') + 1 ))/" "$AppsConf"
+
+                echo "App '$app_name' added to profile '$profile_name'."
+            else
+                echo "Profile '$profile_name' not found."
+            fi
+        else
+            echo "Please specify both a profile name and an app name."
+        fi
+    ;;
+
     #misc and help
     -h|-?|--help)
         echo "lazyass - launches the provided apps because you are lazy and dont want to open them all one by one"
