@@ -1,40 +1,45 @@
 #!/bin/bash
 
-AppsConf=$("$HOME"/.apps-script.conf)
+AppsConf="$HOME/.apps-script.conf"
 
-if [[ -f $AppsConf==false ]]
+if [[ ! -f "$AppsConf" ]]
 then
-    echo "Could not lokate the config file at $AppsConf"
+    echo "Could not locate the config file at $AppsConf"
     echo "Creating config file..."
-    touch .apps-scirpt.conf
-    echo "
-    Apps:
-    Apps-Amount: 
-    " > "$AppsConf"
+    cat > "$AppsConf" <<EOF
+Apps:
+Apps-Amount:
+EOF
 fi
 
-declare -a apps=(
+declare -a apps=()
 
-)
-
-AmountOfApps=$($AppsConf | grep "Apps-Amount:")
+# shellcheck disable=SC2034
+AmountOfApps=$($AppsConf|grep "Apps-Amount:")
 
 for app in "${apps[@]}"
 do
     pathToApp=$(which "$app" 2>/dev/null)
     if [[ -z $pathToApp ]]
     then
-        echo "$app is missng please if the app is installed."
+        echo "$app is missing. Please check if the app is installed."
     fi
-    unset PathToApp
+    unset pathToApp
 done
 
 case "$1" in
     -ap|--add-app)
-        
+        shift
+        if [[ -n $1 ]]
+        then
+            echo "$1" >> "$AppsConf"
+            echo "App '$1' added to config."
+        else
+            echo "No app name provided."
+        fi
     ;;
 
     -rma|--remove-app)
-
+        #TODO
     ;;
 esac
