@@ -1,5 +1,22 @@
 #!/bin/bash
 
+#########################################################
+#==INFO==                                               #
+#MADE BY: DeletedUser1836                               #
+#VERSION: 1.0.0.0                                       #
+#DATE OF CREATION: 10.05.2025                           #
+#LAST UPDATE: 10.04.2025                                #
+#                                                       #
+#==CREDITS==:                                           #
+# -me(main author)                                      #
+# -myself(testing)                                      #
+# -My Mom, Dad and ChatGPT(feedback)                    #
+#                                                       #
+#GITHUB: https://github.com/DeletedUser1836/lazyass     #
+#LICENSE: If you want to use it pls leave ma a star     #
+#         on my github page of the project <3           # 
+#########################################################
+
 AppsConf="$HOME/.apps-script.conf"
 
 if [[ ! -f "$AppsConf" ]]
@@ -12,7 +29,6 @@ Apps-Amount: 0
 END
 fi
 
-# shellcheck disable=SC2207
 appsAR=($(grep '^Apps:' "$AppsConf" | sed 's/^Apps: *//'))
 AmountOfApps=$(grep "Apps-Amount:" "$AppsConf" | awk -F': ' '{print $2}')
 
@@ -27,7 +43,6 @@ do
 done
 
 
-# shellcheck disable=SC2120
 launchProfileApps() {
     profileName="$1"
     if ! grep -q "^\[profile:$profileName\]" "$AppsConf"
@@ -37,7 +52,6 @@ launchProfileApps() {
     fi
 
     appsLine=$(awk "/\\[profile:$profileName\\]/ {found=1} found && /^Apps:/ {print; exit}" "$AppsConf")
-    # shellcheck disable=SC2001
     apps=$(echo "$appsLine" | sed 's/^Apps:[[:space:]]*//')
 
     if [[ -z $apps ]]
