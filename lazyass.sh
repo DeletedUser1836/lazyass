@@ -13,10 +13,10 @@ END
 fi
 
 # shellcheck disable=SC2207
-apps=($(grep '^Apps:' "$AppsConf" | sed 's/^Apps: *//'))
+appsAR=($(grep '^Apps:' "$AppsConf" | sed 's/^Apps: *//'))
 AmountOfApps=$(grep "Apps-Amount:" "$AppsConf" | awk -F': ' '{print $2}')
 
-for app in "${apps[@]}"
+for app in "${appsAR[@]}"
 do
     pathToApp=$(which "$app" 2>/dev/null)
     if [[ -z $pathToApp ]]
@@ -152,6 +152,24 @@ EOF
                     sed -i "/^\[profile:$profile_name\]/,/\[profile:/s/Apps:/Apps: $app /" "$AppsConf"
                     echo "App '$app' added to profile '$profile_name'."
                 fi
+            fi
+        else
+            echo "Please specify a profile name."
+        fi
+    ;;
+
+    -dP|--delete-profile)
+        shift
+        if [[ -n "$1" ]]
+        then
+            profile_name="$1"
+            if grep -q "^\[profile:$profile_name\]" "$AppsConf"
+            then
+                echo "Deleting profile '$profile_name'..."
+                sed -i "/^\[profile:$profile_name\]/,/^\[profile:/ { /^\[profile:/!d }" "$AppsConf"
+                echo "Profile '$profile_name' deleted."
+            else
+                echo "Profile '$profile_name' not found."
             fi
         else
             echo "Please specify a profile name."
